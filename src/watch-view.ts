@@ -8,6 +8,7 @@ export class WatchView{
     private hoursDisplayed : HTMLElement ;
     private editionMode : EditionMode = EditionMode.None;
     private isSpanVisible : boolean = true;
+    private isLightOn = false;
 
     constructor(){
         this.secondsDisplayed = document.getElementById('seconds');
@@ -16,7 +17,7 @@ export class WatchView{
         setInterval(()=>{
             this.changeSpanVisibility(this.editionMode);
         },1000);
-
+        this.setLightListener();
     }
 
     connectController(watchController : WatchController){
@@ -26,6 +27,20 @@ export class WatchView{
         document.getElementById("increase-button").addEventListener("click", ()=>{ 
             watchController.onIncreaseButtonClick();
         });
+    }
+
+    setLightListener(){
+        document.getElementById("light-button").addEventListener("click", ()=>{
+            const displayScreenElement : HTMLElement = document.getElementById("display-screen");
+            if(!this.isLightOn){
+                displayScreenElement.style.background = "#FFFFFF";
+                this.isLightOn = true;
+            }
+            else{
+                displayScreenElement.style.background = "#FBE106";
+                this.isLightOn = false;
+            }
+        })
     }
 
     setSecondsObservableSubscription(secondsObersvable : Observable<number>){
@@ -49,10 +64,11 @@ export class WatchView{
                     this.editionMode = editionMode;
                     break;
             }
+            this.changeSpanVisibility(editionMode);
         })
     }
 
-    changeSpanVisibility(editionMode: EditionMode){
+    private changeSpanVisibility(editionMode: EditionMode){
         switch(editionMode){
             case EditionMode.None:
                 this.hoursDisplayed.style.visibility = "visible";
