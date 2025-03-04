@@ -56,6 +56,12 @@ export class WatchsController{
         }
     }
 
+    onResetButtonClick(id:string){
+        const watchModel : WatchModel = this.watchsModel.getWatchModel(id);
+        watchModel.resetLocalSeconds();
+
+    }
+
     getWatchsModels() : Map<string,WatchModel>{
         return this.watchsModel.getWatchsModels();
     }

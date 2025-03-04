@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Observable } from "rxjs";
 import { WatchsController } from './watchs-controller';
 import { EditionMode, WatchModel } from './watchs-model';
+import { HtmlTagObject } from 'html-webpack-plugin';
 
 export class WatchsView{
 
@@ -45,10 +46,12 @@ export class WatchsView{
         const modeButton : HTMLElement = document.createElement('button');
         const lightButton : HTMLElement = document.createElement('button');
         const increaseButton : HTMLElement = document.createElement('button');
+        const resetButton : HTMLElement = document.createElement('button')
 
         modeButton.innerText = "M";
         lightButton.innerText ="L";
-        increaseButton.innerText = "I";        
+        increaseButton.innerText = "I";       
+        resetButton.innerText = "R";
 
         modeButton.classList.add("button");
         modeButton.classList.add("mode");
@@ -58,6 +61,9 @@ export class WatchsView{
 
         increaseButton.classList.add("button");
         increaseButton.classList.add("increase");
+
+        resetButton.classList.add("button");
+        resetButton.classList.add("reset");
 
         const displayScreen : HTMLElement =document.createElement('div');
         displayScreen.classList.add("display-screen");
@@ -88,12 +94,14 @@ export class WatchsView{
         watchDial.appendChild(modeButton);
         watchDial.appendChild(lightButton);
         watchDial.appendChild(increaseButton);
+        watchDial.appendChild(resetButton);
         watchContainer.appendChild(watchDial);
         document.body.appendChild(watchContainer);
 
         modeButton.id = `${id}/mode`;
         lightButton.id= `${id}/light`;
         increaseButton.id =`${id}/increase`;
+        resetButton.id = `${id}/reset`;
         displayScreen.id = `${id}/display-screen`;
 
         hoursDigits.id = `${id}/hours`;
@@ -123,6 +131,9 @@ export class WatchsView{
         })
         document.getElementById(`${id}/increase`).addEventListener("click", ()=>{
             watchController.onIncreaseButtonClick(id);
+        })
+        document.getElementById(`${id}/reset`).addEventListener("click", ()=>{
+            watchController.onResetButtonClick(id);
         })
     }
 

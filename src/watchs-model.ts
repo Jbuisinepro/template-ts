@@ -39,6 +39,10 @@ export class WatchModel{
         return this.localSecondsBehaviourSubject;
     }
 
+    resetLocalSeconds(){
+        this.localSecondsBehaviourSubject.next(0);
+    }
+
 
 }
 
