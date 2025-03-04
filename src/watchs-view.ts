@@ -1,13 +1,15 @@
+import { Observable, Subscription } from 'rxjs';
 import { WatchsController } from './watchs-controller';
 import { DisplayMode, EditionMode, WatchModel } from './watchs-model';
 
 export class WatchsView{
 
     isSpanVisible : boolean ;
-
+    observableSubscriptions :  Map<string,Subscription[]>;
 
     constructor(){
         this.isSpanVisible = true;
+        this.observableSubscriptions =  new Map<string,Subscription[]>();
 
     }
 
@@ -19,19 +21,21 @@ export class WatchsView{
            const  watchModel : WatchModel = watchController.onAddButtonClick();
             this.createNewWatch(watchModel.id);
             this.createButtonsListeners(watchController,watchModel.id);
-            watchModel.getGlobalSeconds().subscribe((seconds)=>{
+            const subscriptions : Subscription[] = [];
+            subscriptions.push(watchModel.getGlobalSeconds().subscribe((seconds)=>{
                 this.updateWatchDigits(watchModel.id, seconds + watchModel.getLocalSeconds().getValue()+watchModel.getTimezone().getValue()*3600,watchModel.getDisplayMode().getValue());
-            })
-            watchModel.getLocalSeconds().subscribe((seconds)=>{
+            }));
+            subscriptions.push(watchModel.getLocalSeconds().subscribe((seconds)=>{
                 this.updateWatchDigits(watchModel.id,seconds + watchModel.getGlobalSeconds().getValue()+ watchModel.getTimezone().getValue()*3600,watchModel.getDisplayMode().getValue());
-            })
-            watchModel.getDisplayMode().subscribe((displayMode)=>{
+            }));
+            subscriptions.push(watchModel.getDisplayMode().subscribe((displayMode)=>{
                 this.updateDisplayModeView(watchModel.id,displayMode);
                 this.updateWatchDigits(watchModel.id, watchModel.getGlobalSeconds().getValue() + watchModel.getLocalSeconds().getValue() + watchModel.getTimezone().getValue()*3600,displayMode);
-            });
-            watchModel.getTimezone().subscribe((timezone)=>{
+            }));
+            subscriptions.push(watchModel.getTimezone().subscribe((timezone)=>{
                 this.updateWatchDigits(watchModel.id, watchModel.getGlobalSeconds().getValue() + watchModel.getLocalSeconds().getValue() + timezone * 3600,watchModel.getDisplayMode().getValue());
-            })
+            }));
+            this.observableSubscriptions.set(watchModel.id,subscriptions);
         });
         
         setInterval(()=> {
@@ -57,6 +61,7 @@ export class WatchsView{
         const increaseButton : HTMLElement = document.createElement('button');
         const resetButton : HTMLElement = document.createElement('button');
         const switchButton : HTMLElement = document.createElement('button');
+        const deleteButton : HTMLElement = document.createElement('button');
 
 
         modeButton.innerText = "M";
@@ -64,6 +69,8 @@ export class WatchsView{
         increaseButton.innerText = "I";       
         resetButton.innerText = "R";
         switchButton.innerText = "S";
+        deleteButton.innerText = "X";
+        
 
         modeButton.classList.add("button");
         modeButton.classList.add("mode");
@@ -79,6 +86,8 @@ export class WatchsView{
 
         switchButton.classList.add("button");
         switchButton.classList.add("switch-display");
+
+        deleteButton.classList.add('delete-button');
 
         const displayScreen : HTMLElement =document.createElement('div');
         displayScreen.classList.add("display-screen");
@@ -118,6 +127,7 @@ export class WatchsView{
         watchDial.appendChild(switchButton);
 
         watchContainer.appendChild(watchDial);
+        watchContainer.appendChild(deleteButton);
         document.body.appendChild(watchContainer);
 
         modeButton.id = `${id}/mode`;
@@ -126,10 +136,13 @@ export class WatchsView{
         resetButton.id = `${id}/reset`;
         displayScreen.id = `${id}/display-screen`;
         switchButton.id = `${id}/switch-display`;
+        deleteButton.id = `${id}/delete`;
 
         hoursDigits.id = `${id}/hours`;
         minutesDigits.id = `${id}/minutes`;
         secondsDigits.id = `${id}/seconds`;
+
+        watchContainer.id = `${id}/watch-container`
 
         ampmSpan.id = `${id}/ampm`;
     }
@@ -165,6 +178,11 @@ export class WatchsView{
         document.getElementById(`${id}/switch-display`).addEventListener("click",()=>{
             watchController.onSwitchDisplayButtonClick(id);
         })
+        document.getElementById(`${id}/delete`).addEventListener("click", ()=>{
+            watchController.onDeleteButtonClick(id);
+            this.unsubscribeAll(id);
+            document.getElementById(`${id}/watch-container`).remove();
+        })
 
     }
 
@@ -178,11 +196,12 @@ export class WatchsView{
     }
 
     private updateWatchDigits(watchId : string ,seconds : number, displayMode : DisplayMode){
-        document.getElementById(`${watchId}/seconds`).textContent = (seconds%60).toString().padStart(2,'0');
-        document.getElementById(`${watchId}/minutes`).textContent = (Math.trunc(seconds/60)%60).toString().padStart(2,'0');
+        const secondsToUse : number = seconds + 24 * 60 *60;
+        document.getElementById(`${watchId}/seconds`).textContent = (secondsToUse%60).toString().padStart(2,'0');
+        document.getElementById(`${watchId}/minutes`).textContent = (Math.trunc(secondsToUse/60)%60).toString().padStart(2,'0');
         switch(displayMode){
             case DisplayMode.AMPM:
-                const classicHour :number = (Math.trunc(seconds/3600)%24);
+                const classicHour :number = (Math.trunc(secondsToUse/3600)%24);
                 if(classicHour>11){
                     document.getElementById(`${watchId}/ampm`).innerText = "PM";
                 }
@@ -192,7 +211,7 @@ export class WatchsView{
                 document.getElementById(`${watchId}/hours`).textContent = (classicHour%12).toString().padStart(2,'0');
                 break;
             case DisplayMode.Classic:
-                document.getElementById(`${watchId}/hours`).textContent = (Math.trunc(seconds/3600)%24).toString().padStart(2,'0');
+                document.getElementById(`${watchId}/hours`).textContent = (Math.trunc(secondsToUse/3600)%24).toString().padStart(2,'0');
                 break;
         }
     }
@@ -226,5 +245,13 @@ export class WatchsView{
                 ampmSpan.style.visibility ="hidden";
                 break;
         }
+    }
+
+    unsubscribeAll(watchId : string){
+        const subscriptions : Subscription[] = this.observableSubscriptions.get(watchId);
+        for(const sub of subscriptions){
+            sub.unsubscribe();
+        }
+        this.observableSubscriptions.delete(watchId);
     }
 }

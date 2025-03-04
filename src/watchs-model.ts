@@ -121,6 +121,11 @@ export class WatchsModel{
         return this.watchsIds;
     }
 
+    deleteWatch(watchId:string){
+        this.watchsModelMap.delete(watchId);
+        this.watchsIds.splice(this.watchsIds.indexOf(watchId),1);
+    }
+
 
 
     

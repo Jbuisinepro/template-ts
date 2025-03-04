@@ -73,6 +73,19 @@
     left: 10px;
 }
 
+.delete-button{
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 2px;
+    right: 2px;
+
+}
+
 .switch-display{
     right:0px;
 }

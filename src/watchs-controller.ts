@@ -11,7 +11,7 @@ export class WatchsController{
         this.watchsView = watchsView;
         const nowDate = new Date();
 
-        this.watchsModel.setSeconds(nowDate.getHours()*3600 + nowDate.getMinutes() * 60 + nowDate.getSeconds());
+        this.watchsModel.setSeconds(nowDate.getUTCHours()*3600 + nowDate.getUTCMinutes() * 60 + nowDate.getUTCSeconds());
         setInterval(()=>{
             this.watchsModel.addSeconds(1);
         },1000);
@@ -77,4 +77,9 @@ export class WatchsController{
     onTimezoneSelectedChanged(timezone : number){
         this.watchsModel.setSelectedTimezone(timezone);
     }
+
+    onDeleteButtonClick(id:string){
+        this.watchsModel.deleteWatch(id);
+    }
+
 }
