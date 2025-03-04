@@ -16,6 +16,12 @@ export class WatchsController{
             this.watchsModel.addSeconds(1);
         },1000);
         this.watchsView.connectController(this);
+        this.watchsModel.getSelectedTimezone().subscribe((timezone : number)=>{
+            const watchIds : string []= watchsModel.getWatchIds(); 
+            if(watchIds.length >0){  
+                watchsModel.getWatchModel(watchIds[watchIds.length-1]).setTimezone(timezone);
+            }
+        });
     }
 
     getWatchsModels() : Map<string,WatchModel>{
@@ -66,5 +72,9 @@ export class WatchsController{
 
     onSwitchDisplayButtonClick(id:string){
         this.watchsModel.getWatchModel(id).switchDisplayMode();
+    }
+
+    onTimezoneSelectedChanged(timezone : number){
+        this.watchsModel.setSelectedTimezone(timezone);
     }
 }

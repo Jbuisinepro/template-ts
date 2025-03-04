@@ -11,12 +11,15 @@ export enum DisplayMode{
     Classic
 }
 
+
+
 export class WatchModel{
     id : string;
     private editionModeBehaviourSubject: BehaviorSubject<EditionMode>;
     private localSecondsBehaviourSubject : BehaviorSubject<number>;
     private globalSecondsBehaviourSubject : BehaviorSubject<number>;
     private displayModeBehaviourSubject : BehaviorSubject<DisplayMode>;
+    private timezoneBehaviourSubject : BehaviorSubject<number>;
 
     constructor(id : string, globalSecondsBehaviourSubject : BehaviorSubject<number>){
         this.id =  id;
@@ -24,6 +27,7 @@ export class WatchModel{
         this.editionModeBehaviourSubject = new BehaviorSubject<EditionMode>(EditionMode.None);
         this.localSecondsBehaviourSubject = new BehaviorSubject<number>(0);
         this.displayModeBehaviourSubject = new BehaviorSubject<DisplayMode>(DisplayMode.Classic);
+        this.timezoneBehaviourSubject = new BehaviorSubject<number>(1);
     }
 
     addSeconds(seconds : number){
@@ -57,22 +61,35 @@ export class WatchModel{
     resetLocalSeconds(){
         this.localSecondsBehaviourSubject.next(0);
     }
+
+    getTimezone(){
+        return this.timezoneBehaviourSubject;
+    }
+
+    setTimezone(timezone : number){
+        this.timezoneBehaviourSubject.next(timezone);
+    }
 }
 
 
 
 export class WatchsModel{
 
+    private timezoneSelectedBehaviourSubject : BehaviorSubject<number>;
     private globalSecondsBehaviourSubject : BehaviorSubject<number>;
     private watchsModelMap : Map<string,WatchModel>;
+    private watchsIds : string [];
     constructor(){
         this.watchsModelMap = new Map<string,WatchModel>
         this.globalSecondsBehaviourSubject = new BehaviorSubject<number>(0);
+        this.timezoneSelectedBehaviourSubject = new BehaviorSubject<number>(1);
+        this.watchsIds = [];
     }
 
     setNewWatch(id : string): WatchModel{
         const watchModel : WatchModel = new WatchModel(id,this.globalSecondsBehaviourSubject);
         this.watchsModelMap.set(id,watchModel);
+        this.watchsIds.push(id);
         return watchModel;
     }
 
@@ -91,6 +108,20 @@ export class WatchsModel{
     getWatchsModels():Map<string,WatchModel> {
         return this.watchsModelMap;
     }
+
+    getSelectedTimezone():BehaviorSubject<number>{
+        return this.timezoneSelectedBehaviourSubject;
+    }
+
+    setSelectedTimezone(timezone : number){
+        this.timezoneSelectedBehaviourSubject.next(timezone);
+    }
+
+    getWatchIds() : string[]{
+        return this.watchsIds;
+    }
+
+
 
     
 

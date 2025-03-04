@@ -5,27 +5,35 @@ export class WatchsView{
 
     isSpanVisible : boolean ;
 
+
     constructor(){
         this.isSpanVisible = true;
+
     }
 
 
     connectController(watchController : WatchsController){
+        this.createTimezonOptionsListener(watchController);
+
         document.getElementById("add-button").addEventListener("click",()=>{
            const  watchModel : WatchModel = watchController.onAddButtonClick();
             this.createNewWatch(watchModel.id);
             this.createButtonsListeners(watchController,watchModel.id);
             watchModel.getGlobalSeconds().subscribe((seconds)=>{
-                this.updateWatchDigits(watchModel.id, seconds + watchModel.getLocalSeconds().getValue(),watchModel.getDisplayMode().getValue());
+                this.updateWatchDigits(watchModel.id, seconds + watchModel.getLocalSeconds().getValue()+watchModel.getTimezone().getValue()*3600,watchModel.getDisplayMode().getValue());
             })
             watchModel.getLocalSeconds().subscribe((seconds)=>{
-                this.updateWatchDigits(watchModel.id,seconds + watchModel.getGlobalSeconds().getValue(),watchModel.getDisplayMode().getValue());
+                this.updateWatchDigits(watchModel.id,seconds + watchModel.getGlobalSeconds().getValue()+ watchModel.getTimezone().getValue()*3600,watchModel.getDisplayMode().getValue());
             })
             watchModel.getDisplayMode().subscribe((displayMode)=>{
                 this.updateDisplayModeView(watchModel.id,displayMode);
-                this.updateWatchDigits(watchModel.id, watchModel.getGlobalSeconds().getValue() + watchModel.getLocalSeconds().getValue(),displayMode)
+                this.updateWatchDigits(watchModel.id, watchModel.getGlobalSeconds().getValue() + watchModel.getLocalSeconds().getValue() + watchModel.getTimezone().getValue()*3600,displayMode);
+            });
+            watchModel.getTimezone().subscribe((timezone)=>{
+                this.updateWatchDigits(watchModel.id, watchModel.getGlobalSeconds().getValue() + watchModel.getLocalSeconds().getValue() + timezone * 3600,watchModel.getDisplayMode().getValue());
             })
         });
+        
         setInterval(()=> {
             const watchsIds :  string[]= Array.from(watchController.getWatchsModels().keys());
             this.isSpanVisible = !this.isSpanVisible;
@@ -142,6 +150,8 @@ export class WatchsView{
     private createButtonsListeners(watchController : WatchsController,id :string){
         document.getElementById(`${id}/mode`).addEventListener("click", ()=>{
             watchController.onModeButtonClick(id);
+            this.changeSpanVisibility(id, watchController.getWatchsModels().get(id).getEditionMode());
+
         })
         document.getElementById(`${id}/light`).addEventListener("click", ()=>{
             this.changeLightMode(id);
@@ -156,6 +166,15 @@ export class WatchsView{
             watchController.onSwitchDisplayButtonClick(id);
         })
 
+    }
+
+    private createTimezonOptionsListener(watchController : WatchsController){
+        const regex = /UTC([+-]\d+)/;
+        const timezoneElement : HTMLElement = document.getElementById("timezone");
+        timezoneElement.addEventListener("change",((event)=>{
+            const timezone : number = parseInt((event.target as HTMLSelectElement).value.match(regex)[1],10);
+            watchController.onTimezoneSelectedChanged(timezone);
+        }));
     }
 
     private updateWatchDigits(watchId : string ,seconds : number, displayMode : DisplayMode){
