@@ -1,3 +1,10 @@
+.add-button{
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 
 .watch-container{
     position: relative;
@@ -27,6 +34,14 @@
     justify-content: center;
     align-items: center;
     font-size: 20px;
+}
+
+.ligh-off{
+    background :#FBE106;
+}
+
+.light-on{
+    background: #FFFFFF;
 }
 
 .button{

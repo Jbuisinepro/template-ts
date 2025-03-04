@@ -1,10 +1,10 @@
 import './index.css';
-import { WatchController } from './watch-controller';
-import { WatchModel } from './watch-model';
-import { WatchView } from './watch-view';
+import { WatchsController } from './watchs-controller';
+import { WatchsModel } from './watchs-model';
+import { WatchsView } from './watchs-view';
 
 
 
-const watchView : WatchView = new WatchView();
-const watchModel : WatchModel = new WatchModel();
-const watchController : WatchController = new WatchController(watchModel, watchView);
+const watchsView : WatchsView = new WatchsView();
+const watchsModel : WatchsModel = new WatchsModel();
+const watchsController : WatchsController = new WatchsController(watchsModel, watchsView);
