@@ -235,7 +235,7 @@ export class WatchsView{
         }
     }
 
-    updateDisplayModeView(watchId: string, displayMode :DisplayMode){
+    private updateDisplayModeView(watchId: string, displayMode :DisplayMode){
         const ampmSpan : HTMLElement = document.getElementById(`${watchId}/ampm`)
         switch(displayMode){
             case DisplayMode.AMPM :
@@ -247,7 +247,7 @@ export class WatchsView{
         }
     }
 
-    unsubscribeAll(watchId : string){
+    private unsubscribeAll(watchId : string){
         const subscriptions : Subscription[] = this.observableSubscriptions.get(watchId);
         for(const sub of subscriptions){
             sub.unsubscribe();
