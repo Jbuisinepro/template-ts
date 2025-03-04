@@ -1,12 +1,10 @@
-import { v4 as uuidv4 } from 'uuid';
-import { Observable } from "rxjs";
 import { WatchsController } from './watchs-controller';
-import { EditionMode, WatchModel } from './watchs-model';
-import { HtmlTagObject } from 'html-webpack-plugin';
+import { DisplayMode, EditionMode, WatchModel } from './watchs-model';
 
 export class WatchsView{
 
     isSpanVisible : boolean ;
+    displayMode : DisplayMode;
 
     constructor(){
         this.isSpanVisible = true;
@@ -19,10 +17,15 @@ export class WatchsView{
             this.createNewWatch(watchModel.id);
             this.createButtonsListeners(watchController,watchModel.id);
             watchModel.getGlobalSeconds().subscribe((seconds)=>{
-                this.updateWatchDigits(watchModel.id, seconds + watchModel.getLocalSeconds().getValue());
+                this.updateWatchDigits(watchModel.id, seconds + watchModel.getLocalSeconds().getValue(),watchModel.getDisplayMode().getValue());
             })
             watchModel.getLocalSeconds().subscribe((seconds)=>{
-                this.updateWatchDigits(watchModel.id,seconds + watchModel.getGlobalSeconds().getValue());
+                this.updateWatchDigits(watchModel.id,seconds + watchModel.getGlobalSeconds().getValue(),watchModel.getDisplayMode().getValue());
+            })
+            watchModel.getDisplayMode().subscribe((displayMode)=>{
+                this.displayMode = displayMode;
+                this.updateDisplayModeView(watchModel.id,displayMode);
+                this.updateWatchDigits(watchModel.id, watchModel.getGlobalSeconds().getValue() + watchModel.getLocalSeconds().getValue(),displayMode)
             })
         });
         setInterval(()=> {
@@ -46,12 +49,15 @@ export class WatchsView{
         const modeButton : HTMLElement = document.createElement('button');
         const lightButton : HTMLElement = document.createElement('button');
         const increaseButton : HTMLElement = document.createElement('button');
-        const resetButton : HTMLElement = document.createElement('button')
+        const resetButton : HTMLElement = document.createElement('button');
+        const switchButton : HTMLElement = document.createElement('button');
+
 
         modeButton.innerText = "M";
         lightButton.innerText ="L";
         increaseButton.innerText = "I";       
         resetButton.innerText = "R";
+        switchButton.innerText = "S";
 
         modeButton.classList.add("button");
         modeButton.classList.add("mode");
@@ -65,6 +71,9 @@ export class WatchsView{
         resetButton.classList.add("button");
         resetButton.classList.add("reset");
 
+        switchButton.classList.add("button");
+        switchButton.classList.add("switch-display");
+
         const displayScreen : HTMLElement =document.createElement('div');
         displayScreen.classList.add("display-screen");
         displayScreen.classList.add("light-off");
@@ -75,11 +84,15 @@ export class WatchsView{
         const secondDoubleDot : HTMLElement = document.createElement('span');
         const secondsDigits : HTMLElement = document.createElement('span');
 
+        const ampmSpan : HTMLElement = document.createElement('span');
+
         hoursDigits.textContent = '01';
         firstDoubleDot.textContent=':';
         minutesDigits.textContent='02';
         secondDoubleDot.textContent = ":";
         secondsDigits.textContent='03';
+        ampmSpan.textContent="AM";
+        ampmSpan.style.visibility ="hidden";
 
 
         displayScreen.appendChild(hoursDigits);
@@ -87,6 +100,7 @@ export class WatchsView{
         displayScreen.appendChild(minutesDigits);
         displayScreen.appendChild(secondDoubleDot);
         displayScreen.appendChild(secondsDigits);
+        displayScreen.appendChild(ampmSpan);
 
 
 
@@ -95,6 +109,8 @@ export class WatchsView{
         watchDial.appendChild(lightButton);
         watchDial.appendChild(increaseButton);
         watchDial.appendChild(resetButton);
+        watchDial.appendChild(switchButton);
+
         watchContainer.appendChild(watchDial);
         document.body.appendChild(watchContainer);
 
@@ -103,10 +119,13 @@ export class WatchsView{
         increaseButton.id =`${id}/increase`;
         resetButton.id = `${id}/reset`;
         displayScreen.id = `${id}/display-screen`;
+        switchButton.id = `${id}/switch-display`;
 
         hoursDigits.id = `${id}/hours`;
         minutesDigits.id = `${id}/minutes`;
         secondsDigits.id = `${id}/seconds`;
+
+        ampmSpan.id = `${id}/ampm`;
     }
 
     private changeLightMode(id : string){
@@ -135,12 +154,30 @@ export class WatchsView{
         document.getElementById(`${id}/reset`).addEventListener("click", ()=>{
             watchController.onResetButtonClick(id);
         })
+        document.getElementById(`${id}/switch-display`).addEventListener("click",()=>{
+            watchController.onSwitchDisplayButtonClick(id);
+        })
+
     }
 
-    private updateWatchDigits(watchId : string ,seconds : number){
+    private updateWatchDigits(watchId : string ,seconds : number, displayMode : DisplayMode){
         document.getElementById(`${watchId}/seconds`).textContent = (seconds%60).toString().padStart(2,'0');
         document.getElementById(`${watchId}/minutes`).textContent = (Math.trunc(seconds/60)%60).toString().padStart(2,'0');
-        document.getElementById(`${watchId}/hours`).textContent = (Math.trunc(seconds/3600)%24).toString().padStart(2,'0');
+        switch(displayMode){
+            case DisplayMode.AMPM:
+                const classicHour :number = (Math.trunc(seconds/3600)%24);
+                if(classicHour>11){
+                    document.getElementById(`${watchId}/ampm`).innerText = "PM";
+                }
+                else{
+                    document.getElementById(`${watchId}/ampm`).innerText = "AM";
+                }
+                document.getElementById(`${watchId}/hours`).textContent = (classicHour%12).toString().padStart(2,'0');
+                break;
+            case DisplayMode.Classic:
+                document.getElementById(`${watchId}/hours`).textContent = (Math.trunc(seconds/3600)%24).toString().padStart(2,'0');
+                break;
+        }
     }
 
     private changeSpanVisibility(watchId : string,editionMode: EditionMode){
@@ -159,6 +196,18 @@ export class WatchsView{
                 hoursDisplayed.style.visibility = "visible";
                 this.isSpanVisible ? minutesDisplayed.style.visibility ="visible" : minutesDisplayed.style.visibility ="hidden";
             break;
+        }
+    }
+
+    updateDisplayModeView(watchId: string, displayMode :DisplayMode){
+        const ampmSpan : HTMLElement = document.getElementById(`${watchId}/ampm`)
+        switch(displayMode){
+            case DisplayMode.AMPM :
+                ampmSpan.style.visibility ="visible";
+                break;
+            case DisplayMode.Classic :
+                ampmSpan.style.visibility ="hidden";
+                break;
         }
     }
 }

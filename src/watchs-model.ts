@@ -1,4 +1,4 @@
-import { BehaviorSubject, Observable } from "rxjs";
+import { BehaviorSubject } from "rxjs";
 
 export enum  EditionMode{
     None,
@@ -6,17 +6,24 @@ export enum  EditionMode{
     Minutes
 }
 
+export enum DisplayMode{
+    AMPM,
+    Classic
+}
+
 export class WatchModel{
     id : string;
     private editionModeBehaviourSubject: BehaviorSubject<EditionMode>;
     private localSecondsBehaviourSubject : BehaviorSubject<number>;
     private globalSecondsBehaviourSubject : BehaviorSubject<number>;
+    private displayModeBehaviourSubject : BehaviorSubject<DisplayMode>;
 
     constructor(id : string, globalSecondsBehaviourSubject : BehaviorSubject<number>){
         this.id =  id;
         this.globalSecondsBehaviourSubject = globalSecondsBehaviourSubject;
         this.editionModeBehaviourSubject = new BehaviorSubject<EditionMode>(EditionMode.None);
         this.localSecondsBehaviourSubject = new BehaviorSubject<number>(0);
+        this.displayModeBehaviourSubject = new BehaviorSubject<DisplayMode>(DisplayMode.Classic);
     }
 
     addSeconds(seconds : number){
@@ -39,11 +46,17 @@ export class WatchModel{
         return this.localSecondsBehaviourSubject;
     }
 
+    getDisplayMode(){
+        return this.displayModeBehaviourSubject;
+    }
+
+    switchDisplayMode(){
+        this.displayModeBehaviourSubject.next((this.displayModeBehaviourSubject.getValue()+1)%2 );
+    }
+
     resetLocalSeconds(){
         this.localSecondsBehaviourSubject.next(0);
     }
-
-
 }
 
 

@@ -18,6 +18,10 @@ export class WatchsController{
         this.watchsView.connectController(this);
     }
 
+    getWatchsModels() : Map<string,WatchModel>{
+        return this.watchsModel.getWatchsModels();
+    }
+
     onAddButtonClick() : WatchModel{
         const uuid : string = uuidv4();
         return this.watchsModel.setNewWatch(uuid);
@@ -57,12 +61,10 @@ export class WatchsController{
     }
 
     onResetButtonClick(id:string){
-        const watchModel : WatchModel = this.watchsModel.getWatchModel(id);
-        watchModel.resetLocalSeconds();
-
+        this.watchsModel.getWatchModel(id).resetLocalSeconds();
     }
 
-    getWatchsModels() : Map<string,WatchModel>{
-        return this.watchsModel.getWatchsModels();
+    onSwitchDisplayButtonClick(id:string){
+        this.watchsModel.getWatchModel(id).switchDisplayMode();
     }
 }
