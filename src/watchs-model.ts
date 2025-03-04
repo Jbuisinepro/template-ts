@@ -21,13 +21,13 @@ export class WatchModel{
     private displayModeBehaviourSubject : BehaviorSubject<DisplayMode>;
     private timezoneBehaviourSubject : BehaviorSubject<number>;
 
-    constructor(id : string, globalSecondsBehaviourSubject : BehaviorSubject<number>){
+    constructor(id : string, globalSecondsBehaviourSubject : BehaviorSubject<number>, timezone : number){
         this.id =  id;
         this.globalSecondsBehaviourSubject = globalSecondsBehaviourSubject;
         this.editionModeBehaviourSubject = new BehaviorSubject<EditionMode>(EditionMode.None);
         this.localSecondsBehaviourSubject = new BehaviorSubject<number>(0);
         this.displayModeBehaviourSubject = new BehaviorSubject<DisplayMode>(DisplayMode.Classic);
-        this.timezoneBehaviourSubject = new BehaviorSubject<number>(1);
+        this.timezoneBehaviourSubject = new BehaviorSubject<number>(timezone);
     }
 
     addSeconds(seconds : number){
@@ -87,7 +87,7 @@ export class WatchsModel{
     }
 
     setNewWatch(id : string): WatchModel{
-        const watchModel : WatchModel = new WatchModel(id,this.globalSecondsBehaviourSubject);
+        const watchModel : WatchModel = new WatchModel(id,this.globalSecondsBehaviourSubject, this.timezoneSelectedBehaviourSubject.getValue());
         this.watchsModelMap.set(id,watchModel);
         this.watchsIds.push(id);
         return watchModel;
