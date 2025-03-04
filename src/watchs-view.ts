@@ -4,7 +4,6 @@ import { DisplayMode, EditionMode, WatchModel } from './watchs-model';
 export class WatchsView{
 
     isSpanVisible : boolean ;
-    displayMode : DisplayMode;
 
     constructor(){
         this.isSpanVisible = true;
@@ -23,7 +22,6 @@ export class WatchsView{
                 this.updateWatchDigits(watchModel.id,seconds + watchModel.getGlobalSeconds().getValue(),watchModel.getDisplayMode().getValue());
             })
             watchModel.getDisplayMode().subscribe((displayMode)=>{
-                this.displayMode = displayMode;
                 this.updateDisplayModeView(watchModel.id,displayMode);
                 this.updateWatchDigits(watchModel.id, watchModel.getGlobalSeconds().getValue() + watchModel.getLocalSeconds().getValue(),displayMode)
             })
